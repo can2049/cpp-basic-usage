@@ -57,6 +57,9 @@ void FileNotifier::monitorLoop() {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         continue;
       }
+      // print the error message
+      std::cerr << "Error reading inotify events: " << strerror(errno)
+                << std::endl;
       break;
     }
 
