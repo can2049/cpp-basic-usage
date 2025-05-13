@@ -74,7 +74,7 @@ void FileNotifier::monitorLoop() {
 
       if ((event->mask & (IN_CLOSE_WRITE | IN_MOVED_TO)) && event->len > 0) {
         std::string filename = directory_ + "/" + event->name;
-        std::cout << "File event. path: " << filename << std::endl;
+        std::cout << "File event captured. path: " << filename << std::endl;
         callback_(filename);
       }
 
