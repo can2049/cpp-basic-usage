@@ -1,0 +1,5 @@
+syntax = "proto2";
+
+message Data{
+    repeated float height = 1;
+}

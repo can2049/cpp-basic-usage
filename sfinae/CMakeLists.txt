@@ -1,0 +1,1 @@
+add_executable(different_struct different_struct.cc)

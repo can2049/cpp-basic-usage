@@ -1,0 +1,13 @@
+add_compile_options(-g)
+
+add_executable(vec_pair vec_pair.cc)
+add_executable(move_vector move_vector.cc)
+add_executable(vec_intersection vec_intersection.cc)
+add_executable(sort sort.cc)
+add_executable(double_to_hex double_to_hex.cc)
+add_executable(out_of_index out_of_index.cc)
+add_executable(for_loop_clear_container for_loop_clear_container.cc)
+add_executable(get_empty get_empty.cc)
+add_executable(calc_index calc_index.cc)
+add_executable(remove_by_set remove_by_set.cc)
+target_link_libraries(remove_by_set absl::strings)

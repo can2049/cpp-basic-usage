@@ -1,0 +1,12 @@
+
+add_executable(capacity capacity.cc)
+add_executable(chinese chinese.cc)
+add_executable(compare compare.cc)
+add_executable(create_from_buffer create_from_buffer.cc)
+add_executable(hasmap_string_view hasmap_string_view.cc)
+add_executable(init_null init_null.cc)
+add_executable(null null.cc)
+add_executable(string_pointer string_pointer.cc)
+target_link_libraries(string_pointer glog)
+add_executable(string_view_demo string_view_demo.cc)
+add_executable(str_to_num str_to_num.cc)
