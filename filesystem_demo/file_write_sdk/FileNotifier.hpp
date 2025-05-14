@@ -21,9 +21,9 @@ class FileNotifier {
   void monitorLoop();
 
   std::string directory_;
-  Callback callback_;
-  int inotifyFd_;
-  int watchDescriptor_;
+  Callback callback_ = nullptr;
+  int inotifyFd_ = -1;
+  int watchDescriptor_ = -1;
   std::thread monitorThread_;
-  std::atomic<bool> running_;
+  std::atomic<bool> running_ = false;
 };

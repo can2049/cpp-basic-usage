@@ -17,6 +17,8 @@ add_compile_options(-fdiagnostics-color=always)
 add_compile_options(-fno-omit-frame-pointer)
 add_compile_options(-fPIC)
 add_compile_options(-Werror=return-type)
+add_compile_options(-Wextra)
+add_compile_options(-Wall)
 # add_compile_options(-Wno-error=unused-parameter)
 
 # add_definitions(-D_GLIBCXX_DEBUG)
