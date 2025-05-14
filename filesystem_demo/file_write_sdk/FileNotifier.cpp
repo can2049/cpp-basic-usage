@@ -22,6 +22,7 @@ FileNotifier::FileNotifier(const std::string& directory, Callback callback)
 }
 
 FileNotifier::~FileNotifier() {
+  std::cout << __func__ << " begin\n";
   stop();
   if (inotifyFd_ != -1) {
     inotify_rm_watch(inotifyFd_, watchDescriptor_);
@@ -38,6 +39,7 @@ void FileNotifier::start() {
 }
 
 void FileNotifier::stop() {
+  std::cout << "Stopping file notifier...\n";
   running_ = false;
   if (monitorThread_.joinable()) {
     monitorThread_.join();
@@ -53,14 +55,36 @@ void FileNotifier::monitorLoop() {
     ssize_t bytesRead = read(inotifyFd_, buffer, bufferSize);
 
     if (bytesRead == -1) {
-      if (errno == EAGAIN) {
+      if (errno == EAGAIN || errno == EWOULDBLOCK) {
+        // Non-blocking read with no data available, this is normal
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         continue;
+      } else if (errno == EINTR) {
+        // Interrupted by signal, retry
+        std::cerr << "Interrupted by signal, retrying..." << std::endl;
+        continue;
+      } else if (errno == EBADF || errno == EFAULT || errno == EINVAL) {
+        // Bad file descriptor, bad address, or invalid argument
+        std::cerr << "Critical error reading inotify events: "
+                  << strerror(errno) << " (errno: " << errno << ")"
+                  << std::endl;
+        break;
+      } else if (errno == ENOMEM) {
+        // Insufficient memory
+        std::cerr << "Memory allocation error when reading inotify events: "
+                  << strerror(errno) << std::endl;
+        // Sleep before retrying to avoid tight loop
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        continue;
+      } else {
+        // Other unexpected errors
+        std::cerr << "Unexpected error reading inotify events: "
+                  << strerror(errno) << " (errno: " << errno << ")"
+                  << std::endl;
+        // Sleep briefly before retrying
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        continue;
       }
-      // print the error message
-      std::cerr << "Error reading inotify events: " << strerror(errno)
-                << std::endl;
-      break;
     }
 
     for (char* ptr = buffer; ptr < buffer + bytesRead;) {
