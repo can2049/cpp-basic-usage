@@ -1,4 +1,6 @@
 
+#include <sys/types.h>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -8,10 +10,12 @@
 #include "FileNotifier.hpp"
 
 void handleFileEvent(const std::string& file_path) {
-  if (std::filesystem::path(file_path).extension() == ".tmp") {
-    std::cerr << "Found a temp file. path: " << file_path << std::endl;
+  // check if file exists
+  if (!std::filesystem::exists(file_path)) {
+    // std::cerr << "File does not exist. path: " << file_path << std::endl;
     return;
   }
+
   std::ifstream file(file_path, std::ios::binary);
   if (!file) {
     std::cerr << "Failed to open path: " << file_path << std::endl;
@@ -23,8 +27,18 @@ void handleFileEvent(const std::string& file_path) {
             << std::endl;
 }
 
-int main() {
-  std::string file_dir = "/tmp/file_write_sdk_demo_delete";
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " <path>" << std::endl;
+    return 1;
+  }
+  std::string file_path = argv[1];
+  std::cout << "Monitoring path: " << file_path << std::endl;
+
+  // create parent directory
+  std::string file_dir = file_path.substr(0, file_path.find_last_of('/'));
+  std::cout << "Creating parent directory: " << file_dir << std::endl;
+
   std::error_code ec;
   std::filesystem::create_directories(file_dir, ec);
   if (ec) {
@@ -33,11 +47,18 @@ int main() {
     return 1;
   }
 
+  uint32_t mask = IN_CLOSE_WRITE | IN_MODIFY | IN_MOVED_TO;
   try {
-    FileNotifier notifier(file_dir, handleFileEvent);
+    FileNotifier notifier(file_path, mask, handleFileEvent);
     notifier.start();
-    std::cout << "Monitoring started. Press Enter to exit..." << std::endl;
-    std::cin.get();
+    std::cout << "Monitoring started. Press 'Esc' to exit..." << std::endl;
+    while (true) {
+      auto c = std::cin.get();
+      if (c == 27) {  // ASCII code for 'Esc'
+        std::cout << "Exiting..." << std::endl;
+        break;
+      }
+    }
     notifier.stop();
   } catch (const std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;

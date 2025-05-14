@@ -1,21 +1,27 @@
 #include "FileNotifier.hpp"
 
+#include <cerrno>
 #include <chrono>
+#include <cstring>
 #include <iostream>
+#include <string>
 
-FileNotifier::FileNotifier(const std::string& directory, Callback callback)
-    : directory_(directory), callback_(std::move(callback)), running_(false) {
-  inotifyFd_ = inotify_init1(IN_NONBLOCK);
-  if (inotifyFd_ == -1) {
+FileNotifier::FileNotifier(const std::string& path, uint32_t mask,
+                           Callback callback)
+    : path_(path),
+      mask_(mask),
+      callback_(std::move(callback)),
+      running_(false) {
+  std::cout << __func__ << " begin. watch path: " << path_ << std::endl;
+  inotify_fd_ = inotify_init1(IN_NONBLOCK);
+  if (inotify_fd_ == -1) {
     throw std::runtime_error("inotify_init1 failed: " +
                              std::string(strerror(errno)));
   }
 
-  // 监控文件关闭写入和移动完成事件
-  const uint32_t mask = IN_CLOSE_WRITE | IN_MOVED_TO | IN_Q_OVERFLOW;
-  watchDescriptor_ = inotify_add_watch(inotifyFd_, directory_.c_str(), mask);
-  if (watchDescriptor_ == -1) {
-    close(inotifyFd_);
+  watch_fd_ = inotify_add_watch(inotify_fd_, path_.c_str(), mask_);
+  if (watch_fd_ == -1) {
+    close(inotify_fd_);
     throw std::runtime_error("inotify_add_watch failed: " +
                              std::string(strerror(errno)));
   }
@@ -24,9 +30,9 @@ FileNotifier::FileNotifier(const std::string& directory, Callback callback)
 FileNotifier::~FileNotifier() {
   std::cout << __func__ << " begin\n";
   stop();
-  if (inotifyFd_ != -1) {
-    inotify_rm_watch(inotifyFd_, watchDescriptor_);
-    close(inotifyFd_);
+  if (inotify_fd_ != -1) {
+    inotify_rm_watch(inotify_fd_, watch_fd_);
+    close(inotify_fd_);
   }
 }
 
@@ -46,45 +52,54 @@ void FileNotifier::stop() {
   }
 }
 
+// Helper method to convert event mask to string representation
+std::string getEventTypeString(uint32_t mask) {
+  std::string result;
+  if (mask & IN_ACCESS) result += "IN_ACCESS ";
+  if (mask & IN_MODIFY) result += "IN_MODIFY ";
+  if (mask & IN_ATTRIB) result += "IN_ATTRIB ";
+  if (mask & IN_CLOSE_WRITE) result += "IN_CLOSE_WRITE ";
+  if (mask & IN_CLOSE_NOWRITE) result += "IN_CLOSE_NOWRITE ";
+  if (mask & IN_OPEN) result += "IN_OPEN ";
+  if (mask & IN_MOVED_FROM) result += "IN_MOVED_FROM ";
+  if (mask & IN_MOVED_TO) result += "IN_MOVED_TO ";
+  if (mask & IN_CREATE) result += "IN_CREATE ";
+  if (mask & IN_DELETE) result += "IN_DELETE ";
+  if (mask & IN_DELETE_SELF) result += "IN_DELETE_SELF ";
+  if (mask & IN_MOVE_SELF) result += "IN_MOVE_SELF ";
+  return result.empty() ? "UNKNOWN" : result;
+}
+
 void FileNotifier::monitorLoop() {
   constexpr size_t eventSize = sizeof(inotify_event);
   constexpr size_t bufferSize = 1024 * (eventSize + 16);
 
   while (running_) {
     char buffer[bufferSize];
-    ssize_t bytesRead = read(inotifyFd_, buffer, bufferSize);
+    ssize_t bytesRead = read(inotify_fd_, buffer, bufferSize);
 
     if (bytesRead == -1) {
-      if (errno == EAGAIN || errno == EWOULDBLOCK) {
-        // Non-blocking read with no data available, this is normal
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        continue;
-      } else if (errno == EINTR) {
-        // Interrupted by signal, retry
-        std::cerr << "Interrupted by signal, retrying..." << std::endl;
-        continue;
-      } else if (errno == EBADF || errno == EFAULT || errno == EINVAL) {
+      // std::cout << "Error reading inotify events. err: " << strerror(errno)
+      //           << " (errno: " << errno << ")" << std::endl;
+      if (errno == EBADF || errno == EFAULT || errno == EINVAL ||
+          errno == ENOMEM || errno == EINTR) {
         // Bad file descriptor, bad address, or invalid argument
         std::cerr << "Critical error reading inotify events: "
                   << strerror(errno) << " (errno: " << errno << ")"
                   << std::endl;
         break;
-      } else if (errno == ENOMEM) {
-        // Insufficient memory
-        std::cerr << "Memory allocation error when reading inotify events: "
-                  << strerror(errno) << std::endl;
-        // Sleep before retrying to avoid tight loop
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        continue;
+      }
+      if (errno == EAGAIN || errno == EWOULDBLOCK) {
+        // Non-blocking read with no data available, this is normal
+        // std::cout << "No data available for reading inotify events.\n";
       } else {
         // Other unexpected errors
         std::cerr << "Unexpected error reading inotify events: "
                   << strerror(errno) << " (errno: " << errno << ")"
                   << std::endl;
-        // Sleep briefly before retrying
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        continue;
       }
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      continue;
     }
 
     for (char* ptr = buffer; ptr < buffer + bytesRead;) {
@@ -96,9 +111,11 @@ void FileNotifier::monitorLoop() {
         continue;
       }
 
-      if ((event->mask & (IN_CLOSE_WRITE | IN_MOVED_TO)) && event->len > 0) {
-        std::string filename = directory_ + "/" + event->name;
-        std::cout << "File event captured. path: " << filename << std::endl;
+      if (event->mask & mask_ && event->len > 0) {
+        std::string filename = path_ + "/" + event->name;
+        std::cout << "File event captured. path: " << filename
+                  << ", event type: " << getEventTypeString(event->mask)
+                  << std::endl;
         callback_(filename);
       }
 

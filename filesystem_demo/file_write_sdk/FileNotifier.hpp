@@ -2,7 +2,6 @@
 #include <unistd.h>
 
 #include <atomic>
-#include <cstring>
 #include <functional>
 #include <string>
 #include <thread>
@@ -11,7 +10,7 @@ class FileNotifier {
  public:
   using Callback = std::function<void(const std::string&)>;
 
-  FileNotifier(const std::string& directory, Callback callback);
+  FileNotifier(const std::string& path, uint32_t mask, Callback callback);
   ~FileNotifier();
 
   void start();
@@ -20,10 +19,11 @@ class FileNotifier {
  private:
   void monitorLoop();
 
-  std::string directory_;
+  std::string path_;
+  uint32_t mask_ = 0;
   Callback callback_ = nullptr;
-  int inotifyFd_ = -1;
-  int watchDescriptor_ = -1;
+  int inotify_fd_ = -1;
+  int watch_fd_ = -1;
   std::thread monitorThread_;
   std::atomic<bool> running_ = false;
 };
