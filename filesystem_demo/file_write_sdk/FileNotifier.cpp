@@ -3,8 +3,10 @@
 #include <cerrno>
 #include <chrono>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <string>
+#include <thread>
 
 FileNotifier::FileNotifier(const std::string& path, uint32_t mask,
                            Callback callback)
@@ -76,9 +78,12 @@ void FileNotifier::monitorLoop() {
 
   while (running_) {
     char buffer[bufferSize];
-    ssize_t bytesRead = read(inotify_fd_, buffer, bufferSize);
+    ssize_t bytes_read = read(inotify_fd_, buffer, bufferSize);
 
-    if (bytesRead == -1) {
+    // std::cout << "Read inotify events. bytesRead: " << bytesRead
+    //           << ", errno: " << errno << std::endl;
+
+    if (bytes_read == -1) {
       // std::cout << "Error reading inotify events. err: " << strerror(errno)
       //           << " (errno: " << errno << ")" << std::endl;
       if (errno == EBADF || errno == EFAULT || errno == EINVAL ||
@@ -102,7 +107,7 @@ void FileNotifier::monitorLoop() {
       continue;
     }
 
-    for (char* ptr = buffer; ptr < buffer + bytesRead;) {
+    for (char* ptr = buffer; ptr < buffer + bytes_read;) {
       inotify_event* event = reinterpret_cast<inotify_event*>(ptr);
 
       if (event->mask & IN_Q_OVERFLOW) {
@@ -111,8 +116,11 @@ void FileNotifier::monitorLoop() {
         continue;
       }
 
-      if (event->mask & mask_ && event->len > 0) {
-        std::string filename = path_ + "/" + event->name;
+      if (event->mask & mask_) {
+        std::string filename = path_;
+        if (event->len > 0) {
+          filename += "/" + std::string(event->name);
+        }
         std::cout << "File event captured. path: " << filename
                   << ", event type: " << getEventTypeString(event->mask)
                   << std::endl;

@@ -20,6 +20,7 @@ class FileNotifier {
   void monitorLoop();
 
   std::string path_;
+
   uint32_t mask_ = 0;
   Callback callback_ = nullptr;
   int inotify_fd_ = -1;

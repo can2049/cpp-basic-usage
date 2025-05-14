@@ -12,7 +12,7 @@
 void handleFileEvent(const std::string& file_path) {
   // check if file exists
   if (!std::filesystem::exists(file_path)) {
-    // std::cerr << "File does not exist. path: " << file_path << std::endl;
+    std::cerr << "File does not exist. path: " << file_path << std::endl;
     return;
   }
 
@@ -47,7 +47,12 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  uint32_t mask = IN_CLOSE_WRITE | IN_MODIFY | IN_MOVED_TO;
+  uint32_t mask =
+      IN_CLOSE_WRITE | IN_MODIFY | IN_MOVED_TO | IN_MODIFY | IN_ATTRIB;
+
+  // auto mask = IN_MODIFY | IN_ACCESS | IN_ATTRIB | IN_CLOSE_WRITE |
+  //             IN_CLOSE_NOWRITE | IN_OPEN | IN_DELETE_SELF | IN_MOVE_SELF;
+
   try {
     FileNotifier notifier(file_path, mask, handleFileEvent);
     notifier.start();
