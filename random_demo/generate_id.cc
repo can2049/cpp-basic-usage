@@ -1,12 +1,12 @@
-#include <cstddef>  // std::size_t
-#include <cstdio>   // std::snprintf
-#include <cstdlib>  // std::stoul
-#include <cstring>  // std::snprintf
-#include <iomanip>  // 格式化输出（虽然简化版未直接使用，保留以防后续修改）
+#include <cstddef>   // std::size_t
+#include <cstdio>    // std::snprintf
+#include <cstdlib>   // std::stoul
+#include <cstring>   // std::snprintf
+#include <iomanip>   // 格式化输出（虽然简化版未直接使用，保留以防后续修改）
 #include <iostream>  // 输入输出流
 #include <random>    // 随机数生成相关功能
-#include <sstream>  // 字符串流（虽然简化版未直接使用，保留以防后续修改）
-#include <string>  // 字符串操作
+#include <sstream>   // 字符串流（虽然简化版未直接使用，保留以防后续修改）
+#include <string>    // 字符串操作
 
 /**
  * @brief 生成指定长度的随机ID字符串
@@ -48,6 +48,28 @@ std::string GenerateId(size_t length) {
   return id;
 }
 
+int32_t random_31bit_id() {
+  // Use the 64-bit Mersenne Twister engine
+  // use random device to seed the generator
+  static std::mt19937_64 generator(std::random_device{}());
+
+  // Define the distribution range: [0, 2^31 - 1]
+  constexpr int32_t kUpperBound = (1u << 31) - 1;
+  std::uniform_int_distribution<int32_t> distribution(0, kUpperBound);
+
+  // Generate and return the random number
+  int32_t id = distribution(generator);
+  return id;
+}
+
+void batch_random_31_bit_id(int32_t count = 10) {
+  for (int32_t i = 0; i < count; ++i) {
+    int32_t id = random_31bit_id();
+    std::cout << "Random 31 bit ID " << i << ": 0x" << std::hex << std::setw(8)
+              << std::setfill('0') << id << std::dec << std::endl;
+  }
+}
+
 // 测试函数
 int main(int argc, char* argv[]) {
   // 检查命令行参数
@@ -67,6 +89,8 @@ int main(int argc, char* argv[]) {
 
   // 输出生成的随机ID
   std::cout << "Generated ID: " << random_id << std::endl;
+
+  batch_random_31_bit_id();
 
   return 0;
 }
