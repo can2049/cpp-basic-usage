@@ -31,22 +31,22 @@ FileNotifier::FileNotifier(const std::string& path, uint32_t mask,
 
 FileNotifier::~FileNotifier() {
   std::cout << __func__ << " begin\n";
-  stop();
+  Stop();
   if (inotify_fd_ != -1) {
     inotify_rm_watch(inotify_fd_, watch_fd_);
     close(inotify_fd_);
   }
 }
 
-void FileNotifier::start() {
+void FileNotifier::Start() {
   if (running_) {
     return;
   }
   running_ = true;
-  monitor_thread_ = std::thread(&FileNotifier::monitorLoop, this);
+  monitor_thread_ = std::thread(&FileNotifier::MonitorLoop, this);
 }
 
-void FileNotifier::stop() {
+void FileNotifier::Stop() {
   std::cout << "Stopping file notifier...\n";
   running_ = false;
   if (monitor_thread_.joinable()) {
@@ -55,7 +55,7 @@ void FileNotifier::stop() {
 }
 
 // Helper method to convert event mask to string representation
-std::string getEventTypeString(uint32_t mask) {
+std::string GetEventTypeString(uint32_t mask) {
   std::string result;
   if (mask & IN_ACCESS) result += "IN_ACCESS ";
   if (mask & IN_MODIFY) result += "IN_MODIFY ";
@@ -72,7 +72,7 @@ std::string getEventTypeString(uint32_t mask) {
   return result.empty() ? "UNKNOWN" : result;
 }
 
-void FileNotifier::monitorLoop() {
+void FileNotifier::MonitorLoop() {
   constexpr size_t eventSize = sizeof(inotify_event);
   constexpr size_t bufferSize = 1024 * (eventSize + 16);
 
@@ -103,7 +103,7 @@ void FileNotifier::monitorLoop() {
                   << strerror(errno) << " (errno: " << errno << ")"
                   << std::endl;
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
       continue;
     }
 
@@ -122,7 +122,7 @@ void FileNotifier::monitorLoop() {
           filename += "/" + std::string(event->name);
         }
         std::cout << "File event captured. path: " << filename
-                  << ", event type: " << getEventTypeString(event->mask)
+                  << ", event type: " << GetEventTypeString(event->mask)
                   << std::endl;
         callback_(filename);
       }

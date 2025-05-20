@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 
   try {
     FileNotifier notifier(file_path, mask, handleFileEvent);
-    notifier.start();
+    notifier.Start();
     std::cout << "Monitoring started. Press 'Esc' to exit..." << std::endl;
     while (true) {
       auto c = std::cin.get();
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
         break;
       }
     }
-    notifier.stop();
+    notifier.Stop();
   } catch (const std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     return 1;

@@ -13,11 +13,11 @@ class FileNotifier {
   FileNotifier(const std::string& path, uint32_t mask, Callback callback);
   ~FileNotifier();
 
-  void start();
-  void stop();
+  void Start();
+  void Stop();
 
  private:
-  void monitorLoop();
+  void MonitorLoop();
 
   std::string path_;
 
