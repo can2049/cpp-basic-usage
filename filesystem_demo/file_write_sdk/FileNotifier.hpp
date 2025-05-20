@@ -25,6 +25,6 @@ class FileNotifier {
   Callback callback_ = nullptr;
   int inotify_fd_ = -1;
   int watch_fd_ = -1;
-  std::thread monitorThread_;
+  std::thread monitor_thread_;
   std::atomic<bool> running_ = false;
 };

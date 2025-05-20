@@ -43,14 +43,14 @@ void FileNotifier::start() {
     return;
   }
   running_ = true;
-  monitorThread_ = std::thread(&FileNotifier::monitorLoop, this);
+  monitor_thread_ = std::thread(&FileNotifier::monitorLoop, this);
 }
 
 void FileNotifier::stop() {
   std::cout << "Stopping file notifier...\n";
   running_ = false;
-  if (monitorThread_.joinable()) {
-    monitorThread_.join();
+  if (monitor_thread_.joinable()) {
+    monitor_thread_.join();
   }
 }
 
