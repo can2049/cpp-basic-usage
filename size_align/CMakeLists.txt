@@ -1,0 +1,1 @@
+add_executable(check_size_align check_size_align.cc)

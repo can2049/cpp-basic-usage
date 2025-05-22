@@ -84,6 +84,7 @@ add_subdirectory(use_queue)
 add_subdirectory(filesystem_demo)
 add_subdirectory(lock_demo)
 add_subdirectory(use_string)
+add_subdirectory(size_align)
 
 add_executable(compare_version compare_version.cc)
 
