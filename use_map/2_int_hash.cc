@@ -35,10 +35,10 @@ std::unordered_set<std::array<int64_t, 2>, ArrayHash> create_set(
   std::unordered_set<std::array<int64_t, 2>, ArrayHash> hashs;
   hashs.reserve(data.size());
   for (auto& d : data) {
-    auto result = hashs.insert(d);
-    if (!result.second) {
+    auto [iter, result] = hashs.insert(d);
+    if (!result) {
       // insert failed, meaning the element already exists
-      const auto& old = *(result.first);
+      const auto& old = *(iter);
       if (old == d) {
         continue;  // No need to print if they are the same
       }
