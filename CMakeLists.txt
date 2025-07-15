@@ -85,6 +85,9 @@ add_subdirectory(filesystem_demo)
 add_subdirectory(lock_demo)
 add_subdirectory(use_string)
 add_subdirectory(size_align)
+add_subdirectory(search_value)
+add_subdirectory(use_thread)
+add_subdirectory(use_map)
 
 add_executable(compare_version compare_version.cc)
 

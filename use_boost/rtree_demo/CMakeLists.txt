@@ -30,3 +30,6 @@ target_link_libraries(rtree_9 boost_system glog Threads::Threads)
 
 add_executable(rtree_10 rtree_10.cc)
 target_link_libraries(rtree_10 boost_system glog Threads::Threads)
+
+add_executable(point_2_polyline point_2_polyline.cc)
+target_link_libraries(point_2_polyline boost_system glog Threads::Threads)

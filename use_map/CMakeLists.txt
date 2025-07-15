@@ -1,0 +1,1 @@
+add_executable(2_int_hash 2_int_hash.cc)

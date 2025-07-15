@@ -13,4 +13,4 @@ include_directories(
 )
 
 add_executable(use_proto use_proto.cc)
-target_link_libraries(use_proto ${PROJECT_NAME})
+target_link_libraries(use_proto ${PROJECT_NAME}  absl::log absl::log_internal_check_op)

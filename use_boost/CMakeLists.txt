@@ -8,3 +8,4 @@ target_link_libraries(signal2 boost_system glog)
 
 add_subdirectory(rtree_demo)
 add_subdirectory(bimap)
+add_subdirectory(geometry)
