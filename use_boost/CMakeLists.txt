@@ -10,3 +10,6 @@ add_subdirectory(rtree_demo)
 add_subdirectory(bimap)
 add_subdirectory(geometry)
 add_subdirectory(graph_library)
+
+add_executable(intrusive_list_demo intrusive_list_demo.cc)
+target_link_libraries(intrusive_list_demo boost_system glog)
