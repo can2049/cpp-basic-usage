@@ -36,10 +36,13 @@ void plot_linestrings(const linestring_t& original,
   gnuplot_script << "set xlabel 'X'\n";
   gnuplot_script << "set ylabel 'Y'\n";
   gnuplot_script << "set grid\n";
+  // gnuplot_script << "set key outside\n";  // Put legend outside plot area
   gnuplot_script << "plot 'original_line.dat' with linespoints linewidth 2 "
-                    "pointtype 7 title 'Original', ";
+                    "pointtype 7 linecolor rgb 'blue' title 'Original', ";
   gnuplot_script << "'simplified_line.dat' with linespoints linewidth 2 "
-                    "pointtype 5 title 'Simplified'\n";
+                    "pointtype 5 linecolor rgb 'red' title 'Simplified'\n";
+  // gnuplot_script
+  //     << "pause -1 'Press any key to continue...'\n";  // Keep window open
   gnuplot_script.close();
 
   // Execute gnuplot
