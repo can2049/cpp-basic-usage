@@ -13,7 +13,7 @@
 
 template <typename TimeMap>
 class bfs_time_visitor : public boost::default_bfs_visitor {
-  typedef typename boost::property_traits<TimeMap>::value_type T;
+  using T = typename boost::property_traits<TimeMap>::value_type;
 
  public:
   bfs_time_visitor(TimeMap tmap, T& t) : m_timemap(tmap), m_time(t) {}
@@ -27,36 +27,38 @@ class bfs_time_visitor : public boost::default_bfs_visitor {
 
 int main() {
   // Select the graph type we wish to use
-  typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS>
-      graph_t;
+  using graph_t =
+      boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS>;
+
   // Set up the vertex IDs and names
   enum { r, s, t, u, v, w, x, y, N };
   const char* name = "rstuvwxy";
+
   // Specify the edges in the graph
-  typedef std::pair<int, int> E;
+  using E = std::pair<int, int>;
   E edge_array[] = {E(r, s), E(r, v), E(s, w), E(w, r), E(w, t),
                     E(w, x), E(x, t), E(t, u), E(x, y), E(u, y)};
+
   // Create the graph object
-  const int n_edges = sizeof(edge_array) / sizeof(E);
+  constexpr int n_edges = std::size(edge_array);
 #if defined(BOOST_MSVC) && BOOST_MSVC <= 1300
   // VC++ has trouble with the edge iterator constructor
   graph_t g(N);
   for (std::size_t j = 0; j < n_edges; ++j)
     add_edge(edge_array[j].first, edge_array[j].second, g);
 #else
-  typedef boost::graph_traits<graph_t>::vertices_size_type v_size_t;
+  using v_size_t = boost::graph_traits<graph_t>::vertices_size_type;
   graph_t g(edge_array, edge_array + n_edges, v_size_t(N));
 #endif
 
-  // Typedefs
-  typedef boost::graph_traits<graph_t>::vertices_size_type Size;
+  // Type aliases
+  using Size = boost::graph_traits<graph_t>::vertices_size_type;
 
   // a vector to hold the discover time property for each vertex
   std::vector<Size> dtime(num_vertices(g));
-  typedef boost::iterator_property_map<
+  using dtime_pm_type = boost::iterator_property_map<
       std::vector<Size>::iterator,
-      boost::property_map<graph_t, boost::vertex_index_t>::const_type>
-      dtime_pm_type;
+      boost::property_map<graph_t, boost::vertex_index_t>::const_type>;
   dtime_pm_type dtime_pm(dtime.begin(), boost::get(boost::vertex_index, g));
 
   Size time = 0;
