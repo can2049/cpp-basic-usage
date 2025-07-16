@@ -1,0 +1,2 @@
+add_executable(bfs_example bfs_example.cc)
+target_link_libraries(bfs_example boost_graph)
