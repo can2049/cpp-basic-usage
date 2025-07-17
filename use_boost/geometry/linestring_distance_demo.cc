@@ -1,6 +1,9 @@
 
 #include <algorithm>
 #include <boost/geometry.hpp>
+#include <boost/geometry/algorithms/detail/distance/interface.hpp>
+#include <boost/geometry/algorithms/discrete_frechet_distance.hpp>
+#include <boost/geometry/algorithms/discrete_hausdorff_distance.hpp>
 #include <boost/geometry/geometries/linestring.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <cmath>
@@ -31,13 +34,15 @@ int main() {
   double frechet_distance = bg::discrete_frechet_distance(line1, line2);
   std::cout << "Discrete Fréchet Distance: " << frechet_distance << std::endl;
 
+  double hausdorff_distance = bg::discrete_hausdorff_distance(line1, line2);
+  std::cout << "Hausdorff Distance: " << hausdorff_distance << std::endl;
+
   double line_distance = bg::distance(line1, line2);
   std::cout << "Line Distance: " << line_distance << std::endl;
 
-
   double dist = std::numeric_limits<double>::max();
-  for(auto& p1: line1){
-    for (auto & p2: line2) {
+  for (auto& p1 : line1) {
+    for (auto& p2 : line2) {
       double dist2 = point_distance(p1, p2);
       dist = std::min(dist, dist2);
     }
