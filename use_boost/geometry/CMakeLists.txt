@@ -5,3 +5,7 @@ target_link_libraries(distance_example boost_system glog)
 
 add_executable(simplify_demo simplify_demo.cc)
 target_link_libraries(simplify_demo boost_system glog)
+
+add_executable(show_basic_shape show_basic_shape.cc)
+target_link_libraries(show_basic_shape boost_system glog)
+
