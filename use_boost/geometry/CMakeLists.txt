@@ -9,3 +9,5 @@ target_link_libraries(simplify_demo boost_system glog)
 add_executable(show_basic_shape show_basic_shape.cc)
 target_link_libraries(show_basic_shape boost_system glog)
 
+add_executable(linestring_distance_demo linestring_distance_demo.cc)
+target_link_libraries(linestring_distance_demo boost_system glog)
