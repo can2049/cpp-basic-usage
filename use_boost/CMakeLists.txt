@@ -1,4 +1,5 @@
 add_subdirectory(coroutine)
+add_subdirectory(beast_network)
 
 add_executable(use_circular_buffer use_circular_buffer.cc)
 target_link_libraries(use_circular_buffer boost_system glog)
