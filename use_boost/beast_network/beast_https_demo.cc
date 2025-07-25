@@ -90,7 +90,7 @@ int main() {
     std::cout << "--> Closing connection...\n";
     beast::error_code ec;
 
-    // Perform SSL shutdown
+    // Perform SSL shutdown first
     stream.shutdown(ec);
 
     // Handle common SSL shutdown errors gracefully
@@ -100,18 +100,13 @@ int main() {
       ec = {};
     }
 
-    // Close the underlying TCP connection
-    try {
-      beast::get_lowest_layer(stream).close();
-    } catch (std::exception const& close_error) {
-      std::cerr << "Warning: Error during TCP close: " << close_error.what()
-                << "\n";
-      // Don't throw here as the main operation was successful
-    }
+    // Then shutdown the underlying TCP socket
+    beast::get_lowest_layer(stream).socket().shutdown(
+        tcp::socket::shutdown_both, ec);
 
-    if (ec) {
-      std::cerr << "Warning: Error during SSL shutdown: " << ec.message()
-                << "\n";
+    // Handle TCP shutdown errors
+    if (ec && ec != beast::errc::not_connected) {
+      std::cerr << "Warning: TCP shutdown error: " << ec.message() << "\n";
       // Don't throw here as the main operation was successful
     }
 
