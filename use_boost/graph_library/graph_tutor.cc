@@ -15,111 +15,118 @@
 #include <iostream>           // for std::cout
 #include <utility>            // for std::pair
 
+// create a typedef for the Graph type
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS,
+                              boost::no_property,
+                              boost::property<boost::edge_weight_t, float> >
+    Graph;
+
 template <class Graph>
 struct exercise_vertex {
   exercise_vertex(Graph& g_, const char name_[]) : g(g_), name(name_) {}
+
   typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
+
   void operator()(const Vertex& v) const {
-    using namespace boost;
-    auto vertex_id = get(vertex_index, g);
-    std::cout << "vertex: " << name[get(vertex_id, v)] << std::endl;
+    auto vertex_id = boost::get(boost::vertex_index, g);
+    std::cout << "vertex: " << name[boost::get(vertex_id, v)] << std::endl;
+
+    // Print degree information
+    std::cout << "\tdegree: " << boost::degree(v, g) << std::endl;
 
     // Write out the outgoing edges
+    std::cout << "\tout-degree: " << boost::out_degree(v, g) << std::endl;
     std::cout << "\tout-edges: ";
-    typename graph_traits<Graph>::out_edge_iterator out_i, out_end;
-    typename graph_traits<Graph>::edge_descriptor e;
-    for (boost::tie(out_i, out_end) = out_edges(v, g); out_i != out_end;
-         ++out_i) {
-      e = *out_i;
-      auto src = source(e, g), targ = target(e, g);
-      std::cout << "(" << name[get(vertex_id, src)] << ","
-                << name[get(vertex_id, targ)] << ") ";
+    for (auto [oi, oe] = boost::out_edges(v, g); oi != oe; ++oi) {
+      auto e = *oi;
+      auto src = boost::source(e, g);
+      auto targ = boost::target(e, g);
+      std::cout << "(" << name[boost::get(vertex_id, src)] << ","
+                << name[boost::get(vertex_id, targ)] << ") ";
     }
     std::cout << std::endl;
+    std::cout << "\tout-edge count: "
+              << std::distance(boost::out_edges(v, g).first,
+                               boost::out_edges(v, g).second)
+              << std::endl;
 
     // Write out the incoming edges
+    std::cout << "\tin-degree: " << boost::in_degree(v, g) << std::endl;
     std::cout << "\tin-edges: ";
-    typename graph_traits<Graph>::in_edge_iterator in_i, in_end;
-    for (boost::tie(in_i, in_end) = in_edges(v, g); in_i != in_end; ++in_i) {
-      e = *in_i;
-      Vertex src = source(e, g), targ = target(e, g);
-      std::cout << "(" << name[get(vertex_id, src)] << ","
-                << name[get(vertex_id, targ)] << ") ";
+    for (auto [ii, ie] = boost::in_edges(v, g); ii != ie; ++ii) {
+      auto e = *ii;
+      auto src = boost::source(e, g);
+      auto targ = boost::target(e, g);
+      std::cout << "(" << name[boost::get(vertex_id, src)] << ","
+                << name[boost::get(vertex_id, targ)] << ") ";
     }
     std::cout << std::endl;
+    std::cout << "\tin-edge count: "
+              << std::distance(boost::in_edges(v, g).first,
+                               boost::in_edges(v, g).second)
+              << std::endl;
 
     // Write out all adjacent vertices
     std::cout << "\tadjacent vertices: ";
-    typename graph_traits<Graph>::adjacency_iterator ai, ai_end;
-    for (boost::tie(ai, ai_end) = adjacent_vertices(v, g); ai != ai_end; ++ai)
-      std::cout << name[get(vertex_id, *ai)] << " ";
+    for (auto [ai, ae] = boost::adjacent_vertices(v, g); ai != ae; ++ai)
+      std::cout << name[boost::get(vertex_id, *ai)] << " ";
     std::cout << std::endl;
+
+    std::cout << "\tadjacent vertex count: "
+              << std::distance(boost::adjacent_vertices(v, g).first,
+                               boost::adjacent_vertices(v, g).second)
+              << std::endl;
   }
   Graph& g;
   const char* name;
 };
 
 int main(int, char*[]) {
-  // create a typedef for the Graph type
-  typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS,
-                                boost::no_property,
-                                boost::property<boost::edge_weight_t, float> >
-      Graph;
-
   // Make convenient labels for the vertices
   enum { A, B, C, D, E, N };
   const int num_vertices = N;
   const char name[] = "ABCDE";
 
   // writing out the edges in the graph
-  typedef std::pair<int, int> Edge;
-  Edge edge_array[] = {
-      Edge(A, B), Edge(A, D), Edge(C, A), Edge(D, C),
-      Edge(C, E), Edge(B, D), Edge(D, E),
-  };
-  const int num_edges = sizeof(edge_array) / sizeof(edge_array[0]);
+  std::pair<int, int> edge_array[] = {{A, B}, {A, D}, {C, A}, {D, C},
+                                      {C, E}, {B, D}, {D, E}, {B, E}};
 
   // average transmission delay (in milliseconds) for each connection
   float transmission_delay[] = {1.2, 4.5, 2.6, 0.4, 5.2, 1.8, 3.3, 9.1};
 
   // declare a graph object, adding the edges and edge properties
-#if defined(BOOST_MSVC) && BOOST_MSVC <= 1300
-  // VC++ can't handle the iterator constructor
-  Graph g(num_vertices);
-  auto weightmap = get(edge_weight, g);
-  for (std::size_t j = 0; j < num_edges; ++j) {
-    graph_traits<Graph>::edge_descriptor e;
-    bool inserted;
-    boost::tie(e, inserted) =
-        add_edge(edge_array[j].first, edge_array[j].second, g);
-    weightmap[e] = transmission_delay[j];
-  }
-#else
-  Graph g(edge_array, edge_array + num_edges, transmission_delay, num_vertices);
-#endif
+  std::cout << __FILE__ << ":" << __LINE__ << " " << __func__ << "\n";
+  static_assert(std::size(edge_array) == std::size(transmission_delay));
+  Graph g(std::begin(edge_array), std::end(edge_array),
+          std::begin(transmission_delay), num_vertices);
 
   boost::property_map<Graph, boost::vertex_index_t>::type vertex_id =
-      get(boost::vertex_index, g);
+      boost::get(boost::vertex_index, g);
   boost::property_map<Graph, boost::edge_weight_t>::type trans_delay =
-      get(boost::edge_weight, g);
+      boost::get(boost::edge_weight, g);
 
-  std::cout << "vertices(g) = ";
-  typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter;
-  std::pair<vertex_iter, vertex_iter> vp;
-  for (vp = boost::vertices(g); vp.first != vp.second; ++vp.first)
-    std::cout << name[get(vertex_id, *vp.first)] << " ";
+  std::cout << "==> vertices(g) = ";
+  for (auto [vi, ve] = boost::vertices(g); vi != ve; ++vi) {
+    std::cout << name[boost::get(vertex_id, *vi)] << " ";
+  }
   std::cout << std::endl;
+  std::cout << "==> total vertices in graph: " << boost::num_vertices(g)
+            << std::endl;
 
-  std::cout << "edges(g) = ";
+  std::cout << "==> edges(g) = ";
   boost::graph_traits<Graph>::edge_iterator ei, ei_end;
-  for (boost::tie(ei, ei_end) = boost::edges(g); ei != ei_end; ++ei)
-    std::cout << "(" << name[get(vertex_id, source(*ei, g))] << ","
-              << name[get(vertex_id, target(*ei, g))] << ") ";
+  for (auto [ei, ei_end] = boost::edges(g); ei != ei_end; ++ei) {
+    std::cout << "(" << name[boost::get(vertex_id, source(*ei, g))] << ","
+              << name[boost::get(vertex_id, target(*ei, g))] << ") ";
+  }
   std::cout << std::endl;
 
-  std::for_each(boost::vertices(g).first, boost::vertices(g).second,
-                exercise_vertex<Graph>(g, name));
+  {
+    auto [vi, ve] = boost::vertices(g);
+    std::for_each(vi, ve, exercise_vertex<Graph>(g, name));
+  }
 
+  std::cout << "==> Graphviz output:\n";
   std::map<std::string, std::string> graph_attr, vertex_attr, edge_attr;
   graph_attr["size"] = "3,3";
   graph_attr["rankdir"] = "LR";
