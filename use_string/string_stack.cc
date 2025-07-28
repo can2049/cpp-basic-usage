@@ -4,53 +4,87 @@
 
 #include "timer.h"
 
-const int SIZE = 1000000;
+constexpr size_t SIZE = 10000;
+
 void test_stack() {
-  ScopedTimer timer("stack");
-  for (int i = 0; i < SIZE; i++) {
+  std::array<const char*, SIZE * 2> cache;
+  cache.fill(nullptr);
+  std::cout << "Testing stack buffer performance...\n";
+  ScopedTimer timer("stack buffer");
+  for (size_t i = 0; i < SIZE; i++) {
     char buf[12];
     char buf1[12];
+
+    const char* p = std::data(buf);
+    const char* p1 = std::data(buf1);
+
+    cache[i * 2] = p;
+    cache[i * 2 + 1] = p1;
   }
 }
 
 void test_string_short() {
-  ScopedTimer timer("std string");
-  for (int i = 0; i < SIZE; i++) {
+  std::array<const char*, SIZE * 2> cache;
+  cache.fill(nullptr);
+
+  ScopedTimer timer("std string short");
+  for (size_t i = 0; i < SIZE; i++) {
     std::string str("hello ");
     std::string str1("world!");
+
+    const char* p = str.data();
+    const char* p1 = str1.data();
+    cache[i * 2] = p;
+    cache[i * 2 + 1] = p1;
   }
 }
 
 void test_string_long() {
-  ScopedTimer timer("std string");
-  for (int i = 0; i < SIZE; i++) {
+  std::array<const char*, SIZE * 2> cache;
+  cache.fill(nullptr);
+  ScopedTimer timer("std string long");
+  for (size_t i = 0; i < SIZE; i++) {
     std::string str("hello world, it is test string.");
+    const char* p = str.data();
+    cache[i * 2] = p;
+    cache[i * 2 + 1] = p;
   }
 }
 
 void test_pmr_string() {
+  std::array<const char*, SIZE * 2> cache;
+  cache.fill(nullptr);
   ScopedTimer timer("pmr string");
-  for (int i = 0; i < SIZE; i++) {
+  for (size_t i = 0; i < SIZE; i++) {
     char buf[1024];
-    std::pmr::monotonic_buffer_resource resource{std::data(buf), std::size(buf)};
+    std::pmr::monotonic_buffer_resource resource{std::data(buf),
+                                                 std::size(buf)};
     std::pmr::string s{&resource};
 
     s.append("it is a test");
     s.append(
         "it is a long string test;it is a long string test;it is a long string "
         "test;");
+    const char* p = s.data();
+    cache[i * 2] = p;
+    cache[i * 2 + 1] = p;
   }
 }
 
 void test_std_string() {
-  ScopedTimer timer("std string 2");
-  for (int i = 0; i < SIZE; i++) {
+  std::array<const char*, SIZE * 2> cache;
+  cache.fill(nullptr);
+  ScopedTimer timer("std string");
+  for (size_t i = 0; i < SIZE; i++) {
     std::string s;
     s.reserve(1024);
     s.append("it is a test");
     s.append(
         "it is a long string test;it is a long string test;it is a long string "
         "test;");
+    const char* p = s.data();
+    cache[i * 2] = p;
+    cache[i * 2 + 1] = p;
   }
 }
 
