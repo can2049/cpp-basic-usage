@@ -2,6 +2,7 @@
 
 #pragma once
 #include <chrono>
+#include <iostream>
 
 /**
  * @brief A high precision, fast and robust Timer
@@ -36,6 +37,31 @@ class Timer {
     return static_cast<double>(duration) / 1000.0;
   }
 
+  double EndMicro(bool reset = false) {
+    using std::chrono::duration_cast;
+    using std::chrono::microseconds;
+    auto now = std::chrono::steady_clock::now();
+    auto duration =
+        duration_cast<std::chrono::nanoseconds>(now - start_).count();
+    if (reset) {
+      Start();
+    }
+    return static_cast<double>(duration) / 1000.0;
+  }
+
  private:
   std::chrono::time_point<std::chrono::steady_clock> start_;
+};
+
+class ScopedTimer {
+ public:
+  explicit ScopedTimer(const char *name) : name_(name) { timer_.Start(); }
+  ~ScopedTimer() {
+    double duration = timer_.EndMicro();
+    std::cout << "ScopedTimer [" << name_ << "] took " << duration << " us\n";
+  }
+
+ private:
+  Timer timer_;
+  const char *name_;
 };

@@ -10,3 +10,10 @@ add_executable(string_pointer string_pointer.cc)
 target_link_libraries(string_pointer glog)
 add_executable(string_view_demo string_view_demo.cc)
 add_executable(str_to_num str_to_num.cc)
+
+
+
+
+# compile option: O3
+add_executable(string_stack string_stack.cc)
+target_compile_options(string_stack PRIVATE -O3)
