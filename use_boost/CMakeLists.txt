@@ -23,3 +23,6 @@ target_link_libraries(icl_interval_set_demo boost_date_time glog)
 
 add_executable(property_map_demo property_map_demo.cc)
 target_link_libraries(property_map_demo boost_system glog)
+
+add_executable(simple_bimap simple_bimap.cc)
+target_link_libraries(simple_bimap boost_system glog)
