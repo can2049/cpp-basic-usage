@@ -20,3 +20,6 @@ target_link_libraries(icl_party_demo boost_date_time glog)
 
 add_executable(icl_interval_set_demo icl_interval_set_demo.cc)
 target_link_libraries(icl_interval_set_demo boost_date_time glog)
+
+add_executable(property_map_demo property_map_demo.cc)
+target_link_libraries(property_map_demo boost_system glog)

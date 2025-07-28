@@ -26,6 +26,7 @@
 struct location {
   float y, x;  // lat, long
 };
+
 typedef float cost;
 
 template <class Name, class LocMap>
@@ -75,7 +76,9 @@ template <class Graph, class CostType, class LocMap>
 class distance_heuristic : public boost::astar_heuristic<Graph, CostType> {
  public:
   typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
+
   distance_heuristic(LocMap l, Vertex goal) : m_location(l), m_goal(goal) {}
+
   CostType operator()(Vertex u) {
     CostType dx = m_location[m_goal].x - m_location[u].x;
     CostType dy = m_location[m_goal].y - m_location[u].y;
@@ -128,7 +131,6 @@ int main() {
     Binghamton,
     Woodstock,
     NewYork,
-    N
   };
   const char* name[] = {"Troy",      "Lake Placid", "Plattsburgh", "Massena",
                         "Watertown", "Utica",       "Syracuse",    "Rochester",
@@ -165,11 +167,11 @@ int main() {
                 "edge_array and weights arrays must be the same size");
 
   // create graph
-  mygraph_t my_graph(N);
+  mygraph_t my_graph(std::size(name));
   WeightMap weightmap = get(boost::edge_weight, my_graph);
   for (std::size_t j = 0; j < std::size(edge_array); ++j) {
-    auto [edge_des, inserted] =
-        add_edge(edge_array[j].first, edge_array[j].second, my_graph);
+    const auto& [city1, city2] = edge_array[j];
+    auto [edge_des, inserted] = add_edge(city1, city2, my_graph);
     weightmap[edge_des] = weights[j];
   }
 
@@ -188,26 +190,29 @@ int main() {
                      name, locations, 73.46, 78.86, 40.67, 44.93, 480, 400),
                  time_writer<WeightMap>(weightmap));
 
-  std::vector<mygraph_t::vertex_descriptor> parent(
-      boost::num_vertices(my_graph));
+  std::vector<mygraph_t::vertex_descriptor> pred(boost::num_vertices(my_graph));
   std::vector<cost> distance(boost::num_vertices(my_graph));
   try {
     // call astar named parameter interface
     auto heuristic =
         distance_heuristic<mygraph_t, cost, location*>(locations, goal);
-    auto params =
-        predecessor_map(boost::make_iterator_property_map(
-                            parent.begin(), get(boost::vertex_index, my_graph)))
-            .distance_map(make_iterator_property_map(
-                distance.begin(), get(boost::vertex_index, my_graph)))
-            .visitor(astar_goal_visitor<vertex>(goal));
+
+    auto predecessor_p = make_iterator_property_map(
+        pred.begin(), get(boost::vertex_index, my_graph));
+
+    auto distance_p = boost::make_iterator_property_map(
+        distance.begin(), get(boost::vertex_index, my_graph));
+
+    auto params = predecessor_map(predecessor_p)
+                      .distance_map(distance_p)
+                      .visitor(astar_goal_visitor<vertex>(goal));
 
     boost::astar_search_tree(my_graph, start, heuristic, params);
   } catch (found_goal fg) {  // found a path to the goal
     std::list<vertex> shortest_path;
-    for (vertex v = goal;; v = parent[v]) {
+    for (vertex v = goal;; v = pred[v]) {
       shortest_path.push_front(v);
-      if (parent[v] == v) break;
+      if (pred[v] == v) break;
     }
     std::cout << "Shortest path from " << name[start] << " to " << name[goal]
               << ": ";
