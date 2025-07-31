@@ -26,3 +26,6 @@ target_link_libraries(property_map_demo boost_system glog)
 
 add_executable(simple_bimap simple_bimap.cc)
 target_link_libraries(simple_bimap boost_system glog)
+
+add_executable(stl_concept_check stl_concept_check.cc)
+target_link_libraries(stl_concept_check boost_system)
