@@ -12,3 +12,12 @@ target_link_libraries(dijkstra_shortest_paths_demo boost_graph)
 
 add_executable(file_dependencies file_dependencies.cpp)
 target_link_libraries(file_dependencies boost_graph)
+
+add_executable(dfs_demo dfs_demo.cpp)
+target_link_libraries(dfs_demo boost_graph)
+
+add_executable(efficient_cycle_detector efficient_cycle_detector.cc)
+target_link_libraries(efficient_cycle_detector boost_graph glog)
+
+add_executable(six_degree_kevin-bacon six_degree_kevin-bacon.cpp)
+target_link_libraries(six_degree_kevin-bacon boost_graph)

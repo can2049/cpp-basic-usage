@@ -27,8 +27,6 @@
 
 */
 
-#include <time.h>
-
 #include <algorithm>
 #include <boost/config.hpp>
 #include <boost/graph/adjacency_list.hpp>
