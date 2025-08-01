@@ -56,9 +56,9 @@ class manual_cycle_detector {
   }
 };
 
-class found_goal : public std::exception {
+class FoundGoal : public std::exception {
  public:
-  found_goal(const std::string& msg) : msg_(msg) {}
+  FoundGoal(const std::string& msg) : msg_(msg) {}
   const char* what() const noexcept override { return msg_.c_str(); }
 
  private:
@@ -109,7 +109,7 @@ struct state_based_cycle_detector : public boost::dfs_visitor<> {
   void back_edge(Edge e, const Graph& g) const {
     LOG(INFO) << "Found cycle! Back edge: " << boost::source(e, g) << "->"
               << boost::target(e, g);
-    throw found_goal("Found cycle! back edge");
+    throw FoundGoal("Found cycle! back edge");
   }
 
   // 5. 在完成顶点时检查终止条件
@@ -145,7 +145,7 @@ int main() {
   state_based_cycle_detector detector2;
   try {
     boost::depth_first_search(g, boost::visitor(detector2));
-  } catch (found_goal& e) {
+  } catch (FoundGoal& e) {
     LOG(INFO) << " Found goal! what: " << e.what();
   }
   LOG(INFO) << "Examined " << detector2.edge_count << " edges";
