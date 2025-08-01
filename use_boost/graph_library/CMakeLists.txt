@@ -21,3 +21,9 @@ target_link_libraries(efficient_cycle_detector boost_graph glog)
 
 add_executable(six_degree_kevin-bacon six_degree_kevin-bacon.cpp)
 target_link_libraries(six_degree_kevin-bacon boost_graph)
+
+add_executable(dfs_parenthesis dfs_parenthesis.cpp)
+target_link_libraries(dfs_parenthesis boost_graph)
+
+add_executable(event_filter_demo event_filter_demo.cpp)
+target_link_libraries(event_filter_demo boost_graph)
