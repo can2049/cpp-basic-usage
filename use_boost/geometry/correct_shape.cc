@@ -1,26 +1,26 @@
 #include <boost/geometry.hpp>
-#include <boost/geometry/geometries/adapted/boost_tuple.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <iostream>
 
-BOOST_GEOMETRY_REGISTER_BOOST_TUPLE_CS(cs::cartesian)
-
-#include <boost/assign.hpp>
-
 int main() {
-  using boost::assign::tuple_list_of;
-
-  typedef boost::geometry::model::polygon<boost::tuple<int, int> >
-      clockwise_closed_polygon;
+  using point_t = boost::geometry::model::d2::point_xy<int>;
+  typedef boost::geometry::model::polygon<point_t> clockwise_closed_polygon;
 
   clockwise_closed_polygon cwcp;
 
   // Fill it counterclockwise (so wrongly), forgetting the closing point
-  boost::geometry::exterior_ring(cwcp) = tuple_list_of(0, 0)(10, 10)(0, 9);
+  boost::geometry::exterior_ring(cwcp).push_back(point_t(0, 0));
+  boost::geometry::exterior_ring(cwcp).push_back(point_t(10, 10));
+  boost::geometry::exterior_ring(cwcp).push_back(point_t(0, 9));
 
   // Add a counterclockwise closed inner ring (this is correct)
-  boost::geometry::interior_rings(cwcp).push_back(
-      tuple_list_of(1, 2)(4, 6)(2, 8)(1, 2));
+  clockwise_closed_polygon::ring_type inner_ring;
+  inner_ring.push_back(point_t(1, 2));
+  inner_ring.push_back(point_t(4, 6));
+  inner_ring.push_back(point_t(2, 8));
+  inner_ring.push_back(point_t(1, 2));
+  boost::geometry::interior_rings(cwcp).push_back(inner_ring);
 
   // Its area should be negative (because of wrong orientation)
   //     and wrong (because of omitted closing point)
