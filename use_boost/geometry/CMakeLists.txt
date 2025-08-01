@@ -20,3 +20,6 @@ target_link_libraries(shape_buffer boost_system glog)
 
 add_executable(correct_shape correct_shape.cc)
 target_link_libraries(correct_shape boost_system glog)
+
+add_executable(line_interpolate line_interpolate.cc)
+target_link_libraries(line_interpolate boost_system glog)
