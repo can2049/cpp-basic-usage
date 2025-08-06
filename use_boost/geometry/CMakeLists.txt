@@ -23,3 +23,6 @@ target_link_libraries(correct_shape boost_system glog)
 
 add_executable(line_interpolate line_interpolate.cc)
 target_link_libraries(line_interpolate boost_system glog)
+
+add_executable(quadtree_demo quadtree_demo.cc)
+target_link_libraries(quadtree_demo boost_system glog)
