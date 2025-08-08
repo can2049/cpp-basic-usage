@@ -29,3 +29,6 @@ target_link_libraries(simple_bimap boost_system glog)
 
 add_executable(stl_concept_check stl_concept_check.cc)
 target_link_libraries(stl_concept_check boost_system)
+
+add_executable(check_class_member_method check_class_member_method.cc)
+target_link_libraries(check_class_member_method boost_system glog)
