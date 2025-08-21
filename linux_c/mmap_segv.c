@@ -1,3 +1,5 @@
+// https://mp.weixin.qq.com/s/fUO4hu1QrSbCVwYCfmGnLQ
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
