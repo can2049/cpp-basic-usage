@@ -1,0 +1,2 @@
+add_executable(quantile_calulate quantile_calulate.cc)
+target_link_libraries(quantile_calulate glog)

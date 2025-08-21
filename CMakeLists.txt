@@ -91,6 +91,7 @@ add_subdirectory(use_map)
 add_subdirectory(use_namespace)
 add_subdirectory(some_hi)
 add_subdirectory(io_demo)
+add_subdirectory(statistics)
 
 add_executable(compare_version compare_version.cc)
 
