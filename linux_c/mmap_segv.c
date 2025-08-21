@@ -64,12 +64,16 @@ int main() {
   close(fd);
 
   printf("mmap succeeded. Mapped %d bytes. Address: %p\n", FILE_SIZE, ptr);
-  printf("About to attempt to access address ptr[%d], which is exactly outside the mapped area...\n", FILE_SIZE);
+  int addr = FILE_SIZE + 0xfffff;
+  printf(
+      "About to attempt to access address ptr[%d], which is exactly outside "
+      "the mapped area...\n",
+      addr);
 
   // This access is out of bounds. The mapped area is [ptr, ptr + 4095]
   // We try to access ptr + 4096, which is an unmapped virtual address.
   // This operation will cause SIGSEGV (segmentation fault).
-  char value = ptr[FILE_SIZE + 0xfffff];
+  char value = ptr[addr];
 
   // This line of code will never be executed
   printf("This line of code will not be printed. Read value: %c\n", value);
