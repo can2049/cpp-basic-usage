@@ -1,8 +1,23 @@
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
 
-int main() {
+void test_move_element() {
+  std::vector<std::string> source = {"hello", "world"};
+  std::optional<std::string> dest;
+
+  // same effect
+  dest = std::move(source[0]);
+  // dest->swap(source[0]);
+
+  for (auto& s : source) {
+    std::cout << "source element: '" << s << "'\n";
+  }
+  std::cout << "dest element: '" << *dest << "'\n";
+}
+
+void test_move_vector() {
   // Example source vector
   std::vector<std::string> source = {"1", "2", "3", "4", "5"};
 
@@ -25,6 +40,10 @@ int main() {
     std::cout << " " << num;
   }
   std::cout << std::endl;
+}
 
+int main() {
+  test_move_element();
+  test_move_vector();
   return 0;
 }
