@@ -51,7 +51,7 @@ class FileLock {
     int lock_ret = flock(lock_fd_, operation);
     if (lock_ret == -1) {
       LOG(WARNING) << __func__ << " failed! at: " << lockfile_path_
-                   << " , block? " << not_block
+                   << " , block? " << (!not_block)
                    << " , err: " << strerror(errno);
       return false;
     }
