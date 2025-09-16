@@ -36,8 +36,8 @@ class FileLock {
     // create lock file if not exists
     lock_fd_ = open(lockfile_path_.c_str(), O_CREAT | O_RDWR, 0666);
     if (lock_fd_ == -1) {
-      LOG(WARNING) << __func__ << " Failed to open lock file '"
-                   << lockfile_path_ << "': " << strerror(errno);
+      LOG(WARNING) << __func__
+                   << " Failed to open lock file : " << strerror(errno);
       return false;
     }
 
@@ -50,15 +50,13 @@ class FileLock {
 
     int lock_ret = flock(lock_fd_, operation);
     if (lock_ret == -1) {
-      LOG(WARNING) << __func__ << " failed! at: " << lockfile_path_
-                   << " write? " << (lock_type_ == LockType::WRITE)
-                   << " , block? " << (!not_block)
-                   << " , err: " << strerror(errno);
+      LOG(WARNING) << __func__ << " failed! block? " << (!not_block)
+                   << " err: " << strerror(errno);
       return false;
     }
 
     // print thread id of current thread
-    LOG(INFO) << __func__ << " ok! at " << lockfile_path_;
+    LOG(INFO) << __func__ << " ok! ";
     return true;
   }
 
@@ -66,10 +64,9 @@ class FileLock {
     if (lock_fd_ != -1) {
       int unlock_ret = flock(lock_fd_, LOCK_UN);
       if (unlock_ret == -1) {
-        LOG(WARNING) << __func__ << " failed! at: " << lockfile_path_
-                     << " , err: " << strerror(errno);
+        LOG(WARNING) << __func__ << " failed! err: " << strerror(errno);
       } else {
-        LOG(INFO) << __func__ << " ok! at: " << lockfile_path_;
+        LOG(INFO) << __func__ << " ok! ";
       }
 
       close(lock_fd_);
