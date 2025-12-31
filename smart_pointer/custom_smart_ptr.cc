@@ -1,47 +1,45 @@
 #include <atomic>
+#include <cassert>
 #include <iostream>
 #include <utility>  // for std::move
 
 template <typename T>
 class SharedPtr {
  private:
-  T* ptr;                       // 原始指针
-  std::atomic<int>* ref_count;  // 原子引用计数
+  T* ptr_;                       // 原始指针
+  std::atomic<int>* ref_count_;  // 原子引用计数
 
   // 释放资源（线程安全）
   void release() {
-    if (ref_count) {
-      // 原子递减并获取递减后的值
-      int old_count = ref_count->fetch_sub(1, std::memory_order_acq_rel);
-      if (old_count == 1) {
-        delete ptr;
-        delete ref_count;
-        ptr = nullptr;
-        ref_count = nullptr;
+    if (ref_count_) {
+      (*ref_count_) -= 1;
+      if (*ref_count_ == 0) {
+        delete ptr_;
+        delete ref_count_;
       }
     }
   }
 
  public:
   // 默认构造函数
-  SharedPtr() : ptr(nullptr), ref_count(nullptr) {}
+  SharedPtr() : ptr_(nullptr), ref_count_(nullptr) {}
 
   // 构造函数，接受原始指针
-  explicit SharedPtr(T* p) : ptr(p), ref_count(new std::atomic<int>(1)) {}
+  explicit SharedPtr(T* p) : ptr_(p), ref_count_(new std::atomic<int>(1)) {}
 
   // 拷贝构造函数（线程安全）
   SharedPtr(const SharedPtr<T>& other)
-      : ptr(other.ptr), ref_count(other.ref_count) {
-    if (ref_count) {
-      ref_count->fetch_add(1, std::memory_order_relaxed);
+      : ptr_(other.ptr_), ref_count_(other.ref_count_) {
+    if (ref_count_) {
+      (*ref_count_) += 1;
     }
   }
 
   // 移动构造函数
   SharedPtr(SharedPtr<T>&& other) noexcept
-      : ptr(other.ptr), ref_count(other.ref_count) {
-    other.ptr = nullptr;
-    other.ref_count = nullptr;
+      : ptr_(other.ptr_), ref_count_(other.ref_count_) {
+    other.ptr_ = nullptr;
+    other.ref_count_ = nullptr;
   }
 
   // 析构函数（线程安全）
@@ -51,10 +49,10 @@ class SharedPtr {
   SharedPtr<T>& operator=(const SharedPtr<T>& other) {
     if (this != &other) {
       release();
-      ptr = other.ptr;
-      ref_count = other.ref_count;
-      if (ref_count) {
-        ref_count->fetch_add(1, std::memory_order_relaxed);
+      ptr_ = other.ptr_;
+      ref_count_ = other.ref_count_;
+      if (ref_count_) {
+        (*ref_count_) += 1;
       }
     }
     return *this;
@@ -64,26 +62,26 @@ class SharedPtr {
   SharedPtr<T>& operator=(SharedPtr<T>&& other) noexcept {
     if (this != &other) {
       release();
-      ptr = other.ptr;
-      ref_count = other.ref_count;
-      other.ptr = nullptr;
-      other.ref_count = nullptr;
+      ptr_ = other.ptr_;
+      ref_count_ = other.ref_count_;
+      other.ptr_ = nullptr;
+      other.ref_count_ = nullptr;
     }
     return *this;
   }
 
   // 解引用运算符
-  T& operator*() const { return *ptr; }
+  T& operator*() const { return *ptr_; }
 
   // 箭头运算符
-  T* operator->() const { return ptr; }
+  T* operator->() const { return ptr_; }
 
   // 获取原始指针
-  T* get() const { return ptr; }
+  T* get() const { return ptr_; }
 
   // 获取引用计数（线程安全）
   int use_count() const {
-    return ref_count ? ref_count->load(std::memory_order_acquire) : 0;
+    return ref_count_ != nullptr ? ref_count_->load() : 0;
   }
 
   // 检查是否唯一所有者（线程安全）
@@ -93,8 +91,8 @@ class SharedPtr {
   void reset(T* p = nullptr) {
     release();
     if (p) {
-      ptr = p;
-      ref_count = new std::atomic<int>(1);
+      ptr_ = p;
+      ref_count_ = new std::atomic<int>(1);
     }
   }
 };
@@ -137,6 +135,8 @@ int main() {
             << ", use count: " << p2.use_count() << std::endl;
 
   SharedPtr<Data> p5(new Data());
+
+  p5 = p5;  // self-assignment test, ok
 
   return 0;
 }
