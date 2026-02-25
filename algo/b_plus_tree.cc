@@ -32,7 +32,7 @@ class BPlusTree {
     Node* curr = root;
     while (!curr->isLeaf) {
       bool found = false;
-      for (int i = 0; i < curr->keys.size(); i++) {
+      for (size_t i = 0; i < curr->keys.size(); i++) {
         if (key < curr->keys[i]) {
           curr = curr->children[i];
           found = true;

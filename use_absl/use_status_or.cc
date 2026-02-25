@@ -14,11 +14,23 @@ void init_log() {
   google::InstallFailureSignalHandler();  // print backtrace info when crash
 }
 
+struct Data {
+  int age;
+  std::string name;
+};
+
 absl::StatusOr<int> func(int a) {
   if (a > 0) {
     return absl::InvalidArgumentError("input error");
   }
   return a * a * a;
+}
+
+absl::StatusOr<Data> func2(int a) {
+  if (a > 0) {
+    return absl::InvalidArgumentError("input error");
+  }
+  return Data{a, "hello"};
 }
 
 int main(int argc, char** argv) {
@@ -27,4 +39,8 @@ int main(int argc, char** argv) {
   auto ret = func(argc);
   LOG(INFO) << ret.status().ToString();
   LOG(INFO) << ret.status();
+
+  // value() will throw if status is not OK
+  auto data = func2(argc);
+  LOG(INFO) << "name: " << data->name << ", age: " << data->age;
 }
