@@ -23,6 +23,16 @@ add_compile_options(-Wall)
 
 # add_definitions(-D_GLIBCXX_DEBUG)
 
+# ============ ASan/UBSan 选项（ON 时为所有目标启用内存检查） ============
+# 用法：cmake -DENABLE_ASAN=ON .. && make
+# 检查项：heap-use-after-free / double-free / 内存泄漏(依赖 LeakSanitizer) / UB
+option(ENABLE_ASAN "Enable AddressSanitizer + UBSan for all targets" OFF)
+if(ENABLE_ASAN)
+  set(ASAN_FLAGS -fsanitize=address,undefined -fno-sanitize-recover=all -g -O1)
+  add_compile_options(${ASAN_FLAGS})
+  add_link_options(${ASAN_FLAGS})
+endif()
+
 find_package(absl REQUIRED CONFIG)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
