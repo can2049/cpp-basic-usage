@@ -157,6 +157,41 @@ void DemoThreeLevelAliasing() {
   std::cout << "[" << __func__ << "] " << "--- 释放 level3_ptr，观察 Level1 -> Level2 -> Level3 析构顺序 ---\n";
 }
 
+void DemoThreeLevelAliasingConst() {
+  std::cout << "[" << __func__ << "] " << "\n===== 场景 7: 三层 aliasing + shared_ptr<const> —— 只读访问链 =====\n";
+  // 第一层：完整对象
+  auto level1 = std::make_shared<Level1>();
+  level1->level2.name = "const_level1";
+  level1->level2.level3.tag = "const_level3";
+
+  // 第二层：aliasing 到 level1->level2，但声明为 shared_ptr<const Level2>
+  // shared_ptr<Level1> 可以隐式转换为 shared_ptr<const Level2>（加 const 的 upcast）
+  std::shared_ptr<const Level2> level2_const_ptr(level1, &level1->level2);
+  std::cout << "[" << __func__ << "] " << "level2_const_ptr->name = " << level2_const_ptr->name
+            << " (只读，不能修改)\n";
+
+  // 第三层：基于 level2_const_ptr，aliasing 到 level2_const_ptr->level3，
+  // 继续保持 const：shared_ptr<const Level3>
+  std::shared_ptr<const Level3> level3_const_ptr(level2_const_ptr,
+                                                 &level2_const_ptr->level3);
+  std::cout << "[" << __func__ << "] " << "level1.use_count()       = " << level1.use_count() << "\n";
+  std::cout << "[" << __func__ << "] " << "level2_const_ptr.use_count() = " << level2_const_ptr.use_count() << "\n";
+  std::cout << "[" << __func__ << "] " << "level3_const_ptr.use_count()  = " << level3_const_ptr.use_count() << "\n";
+  std::cout << "[" << __func__ << "] " << "level3_const_ptr->tag          = " << level3_const_ptr->tag << "\n";
+
+  // 编译错误演示（已注释）：const 指针不能修改所指对象
+  // level3_const_ptr->tag = "modified";  // error: passing const Level3
+
+  // 关键验证：只保留最深层 const 指针，释放上面两层，整条链仍然存活
+  level1.reset();
+  level2_const_ptr.reset();
+  std::cout << "[" << __func__ << "] " << "level1/level2_const_ptr reset 后 level3_const_ptr.use_count() = "
+            << level3_const_ptr.use_count() << "\n";
+  std::cout << "[" << __func__ << "] " << "level3_const_ptr->tag = " << level3_const_ptr->tag
+            << " (Level1 仍存活，const 不影响所有权，只影响访问权限)\n";
+  std::cout << "[" << __func__ << "] " << "--- 释放 level3_const_ptr，观察析构顺序 ---\n";
+}
+
 int main() {
   DemoSharedOwnership();
   DemoDanglingAfterClear();
@@ -164,6 +199,7 @@ int main() {
   DemoAccessAfterParentReset();
   DemoDanglingStackObject();
   DemoThreeLevelAliasing();
+  DemoThreeLevelAliasingConst();
 
   std::cout << "[" << __func__ << "] " << "\n程序结束\n";
   return 0;
