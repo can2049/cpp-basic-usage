@@ -182,14 +182,22 @@ void DemoThreeLevelAliasingConst() {
   // 编译错误演示（已注释）：const 指针不能修改所指对象
   // level3_const_ptr->tag = "modified";  // error: passing const Level3
 
-  // 关键验证：只保留最深层 const 指针，释放上面两层，整条链仍然存活
+  // 关键验证：逐层 reset，每次打印剩余指针的 use_count
   level1.reset();
+  std::cout << "[" << __func__ << "] " << "level1.reset() 后: level1.use_count() = " << level1.use_count()
+            << ", level2_const_ptr.use_count() = " << level2_const_ptr.use_count()
+            << ", level3_const_ptr.use_count() = " << level3_const_ptr.use_count() << "\n";
+
   level2_const_ptr.reset();
-  std::cout << "[" << __func__ << "] " << "level1/level2_const_ptr reset 后 level3_const_ptr.use_count() = "
+  std::cout << "[" << __func__ << "] " << "level2_const_ptr.reset() 后: level2_const_ptr.use_count() = "
+            << level2_const_ptr.use_count() << ", level3_const_ptr.use_count() = "
             << level3_const_ptr.use_count() << "\n";
   std::cout << "[" << __func__ << "] " << "level3_const_ptr->tag = " << level3_const_ptr->tag
             << " (Level1 仍存活，const 不影响所有权，只影响访问权限)\n";
   std::cout << "[" << __func__ << "] " << "--- 释放 level3_const_ptr，观察析构顺序 ---\n";
+  level3_const_ptr.reset();
+  std::cout << "[" << __func__ << "] " << "level3_const_ptr.reset() 后: level3_const_ptr.use_count() = "
+            << level3_const_ptr.use_count() << " (Level1 -> Level2 -> Level3 已析构)\n";
 }
 
 int main() {
