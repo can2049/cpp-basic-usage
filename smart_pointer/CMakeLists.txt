@@ -9,3 +9,10 @@ add_executable(custom_deleter custom_deleter.cc)
 add_executable(custom_smart_ptr custom_smart_ptr.cc)
 add_executable(custom_smart_ptr2 custom_smart_ptr2.cc)
 add_executable(shared_ptr_alias_constructor shared_ptr_alias_constructor.cc)
+
+# protobuf 生成文件 + aliasing 演示
+find_package(Protobuf REQUIRED)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS alias_level.proto)
+add_executable(shared_ptr_alias_protobuf shared_ptr_alias_protobuf.cc ${PROTO_SRCS})
+target_include_directories(shared_ptr_alias_protobuf PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(shared_ptr_alias_protobuf PRIVATE protobuf::libprotobuf)

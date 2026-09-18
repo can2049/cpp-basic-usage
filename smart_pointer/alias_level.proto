@@ -1,0 +1,21 @@
+syntax = "proto2";
+
+package smart_pointer;
+
+// 第一层：顶层消息
+message Level1 {
+  optional Level2 level2 = 1;
+  optional string other = 2;
+}
+
+// 第二层：Level1 的内层成员
+message Level2 {
+  optional string name = 1;
+  optional int32 value = 2;
+  optional Level3 level3 = 3;
+}
+
+// 第三层：Level2 的内层成员
+message Level3 {
+  optional string tag = 1;
+}
