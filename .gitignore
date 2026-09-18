@@ -11,3 +11,4 @@ compile_commands.json
 a.out
 
 *.svg
+smart_pointer/alias_level.pb.*
